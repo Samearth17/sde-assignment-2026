@@ -85,9 +85,35 @@ class Controller:
         self.db.close()
 
     def _initialize(self):
-        logger.info("Initializing: loading workflows and reconciling state...")
-        state = self.api.get_state()
-        logger.info(f"Simulator: time={state['ts']}, credits={state['credits_remaining']}")
+        logger.info("Initializing: connecting to simulator and loading workflows...")
+        state = None
+        for attempt in range(15):
+            try:
+                state = self.api.get_state()
+                break
+            except Exception as e:
+                if attempt == 0:
+                    logger.info("Waiting for simulator at %s to be ready...", self.api.base_url)
+                time.sleep(1.0)
+
+        if not state:
+            logger.error(
+                "Could not connect to simulator at %s after 15s.\n"
+                "  -> Did you start the simulator server in another terminal window?\n"
+                "  -> Run this first: python3 -m sim serve --scenario scenarios/public_01_dev.yaml --run-dir runs/dev --force\n"
+                "  -> Once it says 'ready in ... — http://127.0.0.1:8700/docs', run ./run.sh again.",
+                self.api.base_url,
+            )
+            sys.exit(1)
+
+        logger.info(f"Connected to simulator: time={state['ts']}, credits={state['credits_remaining']}")
+
+        # If the simulator is at Day 0 (start of fresh scenario run), but the DB has records from a past run:
+        if state["ts"].startswith("2027-01-04T00:00:00") and self.db.get_last_processed_chunk("events") > 0:
+            logger.info("New scenario detected at Day 0 — clearing stale state from previous run...")
+            self.db.clear_all()
+            self._bootstrapped = False
+            self._last_daily_actions.clear()
 
         workflows = self.api.list_workflows()
         for wf in workflows:
@@ -240,18 +266,15 @@ class Controller:
             options = json.loads(wf["options_json"])
 
             # 1. Schedule optimization (C4)
-            cfg = self.experiments.optimize_schedule(wf_id, cfg)
+            sched_cfg = copy.deepcopy(cur["config"])
+            sched_cfg = self.experiments.optimize_schedule(wf_id, sched_cfg)
 
-            # 2. Add standard demographic cohorts (C2)
-            if not cfg.get("cohorts"):
-                cfg["cohorts"] = self.experiments.get_initial_cohorts(wf_id)
-
-            # Try auto-apply for schedule
+            # Try auto-apply for schedule ONLY (do not include cohorts here)
             gov = json.loads(wf["governance_json"])
             auto = gov.get("auto_apply", {})
             if auto.get("enabled") and "schedule" in auto.get("allowed_dims", []):
                 self.governance.try_auto_apply(
-                    wf_id, cfg, rationale="Optimize peak-hour calling schedule and lead preferred hours",
+                    wf_id, sched_cfg, rationale="Optimize peak-hour calling schedule and lead preferred hours",
                     current_ts=current_ts
                 )
 

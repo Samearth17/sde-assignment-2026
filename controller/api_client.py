@@ -101,7 +101,7 @@ class SimulatorClient:
         r = self.client.put(f"/workflows/{workflow_id}/config", json=body)
         if r.status_code in (200, 201):
             return True, r.json()
-        if r.status_code in (403, 409):
+        if r.status_code in (400, 403, 409, 422):
             return False, r.json()
         r.raise_for_status()
         return False, {}  # unreachable

@@ -325,3 +325,4 @@ class IncidentDetector:
             "pass_rate": best_pass_rate,
             "incident_id": incident["incident_id"],
         }
+

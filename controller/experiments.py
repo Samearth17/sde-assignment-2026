@@ -453,9 +453,11 @@ class ExperimentManager:
         wf = self.db.get_workflow(workflow_id)
         options = json.loads(wf["options_json"]) if wf else {}
         available = options.get(dimension, [])
+        if not available:
+            available = list(config.get("allocations", {}).get("default", {}).get(dimension, {}).keys()) or ["W1", "V1"]
 
         # Default fallback is W1 or V1 (or first available non-decayed)
-        fallback = next((v for v in ["W1", "V1"] + available if v != decayed_variant), available[0])
+        fallback = next((v for v in ["W1", "V1"] + available if v != decayed_variant), available[0] if available else "W1")
 
         new_config = copy.deepcopy(config)
         alloc = {fallback: CHAMPION_WEIGHT}
@@ -466,6 +468,8 @@ class ExperimentManager:
                 alloc[v] = each
         tot = sum(alloc.values())
         alloc = {k: round(v / tot, 4) for k, v in alloc.items()}
+        diff = round(1.0 - sum(alloc.values()), 4)
+        alloc[fallback] = round(alloc[fallback] + diff, 4)
 
         if cohort_id == "default":
             new_config["allocations"]["default"][dimension] = alloc

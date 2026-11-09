@@ -207,6 +207,22 @@ class Database:
     def close(self):
         self.conn.close()
 
+    def clear_all(self):
+        """Reset state tables when starting a fresh simulation from Day 0."""
+        tables = [
+            "processed_chunks", "workflows", "call_stats", "approvals",
+            "promotions", "experiments", "incidents", "audit_log",
+            "controller_state", "person_call_history", "validation_runs",
+        ]
+        with self.conn:
+            for t in tables:
+                try:
+                    self.conn.execute(f"DELETE FROM {t}")
+                except Exception:
+                    pass
+        logger.info("Cleared all state tables in database for fresh scenario run.")
+
+
     # ── Controller state (crash recovery) ─────────────────────────────
 
     def get_state(self, key: str, default: str = "") -> str:
