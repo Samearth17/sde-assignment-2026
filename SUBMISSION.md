@@ -5,13 +5,13 @@
 ---
 
 ## 0. TL;DR
-The controller operates an autonomous, closed-loop optimization cycle across tenants and workflows using Champion-vs-Challenger (85/15) testing, Bonferroni-corrected two-proportion Z-tests, proactive prompt safety validation, and caller-ID load rotation. On `public_01_dev`, it delivered **+3.0% conclusion rate lift**, **+3.5% engagement lift** (capturing 17% of headroom), and reduced hallucinated calls by **31%**. On `public_02_incidents`, it captured **34% engagement headroom** (+9.2% conclusion lift, +4.7% engagement lift), resolved the supervisor's bad script incident via LLM fix & validation (reducing hallucinations by **67%**), and slashed the spam-flagged caller ID traffic from 47.1% to **1.9%**. Deliberately omitted: distributed multi-node message queues (Kafka/Redis) and multi-variate factorial interaction modeling, prioritizing bulletproof crash safety, zero data loss, and sub-minute per-day processing on a single 4-vCPU box.
+The controller operates an autonomous, closed-loop optimisation cycle across tenants and workflows using Champion-vs-Challenger (85/15) testing, Bonferroni-corrected two-proportion Z-tests, proactive prompt safety validation, and caller-ID load rotation. On `public_01_dev`, it delivered **+3.0% conclusion rate lift**, **+3.5% engagement lift** (capturing 17% of headroom), and reduced hallucinated calls by **31%**. On `public_02_incidents`, it captured **34% engagement headroom** (+9.2% conclusion lift, +4.7% engagement lift), resolved the supervisor's bad script incident via LLM fix & validation (reducing hallucinations by **67%**), and slashed the spam-flagged caller ID traffic from 47.1% to **1.9%**. Deliberately omitted: distributed multi-node message queues (Kafka/Redis) and multi-variate factorial interaction modeling, prioritising bulletproof crash safety, zero data loss, and sub-minute per-day processing on a single 4-vCPU box.
 
 ---
 
 ## 1. Assumptions
 
-1. **Strict Metric Separation**: Primary KPI and guardrail KPI are decoupled. Optimizing engagement must never sacrifice pickup beyond the workflow-defined `pickup_rate_max_drop` (default 0.02), and vice-versa.
+1. **Strict Metric Separation**: Primary KPI and guardrail KPI are decoupled. Optimising engagement must never sacrifice pickup beyond the workflow-defined `pickup_rate_max_drop` (default 0.02), and vice-versa.
 2. **Supervisor Sovereignty**: Client supervisors retain ultimate authority over workflows. Any manual configuration edit (`actor: supervisor`) is treated as ground truth: current experiments on affected dimensions are superseded immediately, pending proposals are invalidated/rebased, and the supervisor's choice is preserved unless statistically degraded.
 3. **Approver Availability & Circadian Rhythm**: Simulated human approvers only review proposals during designated working hours (`approver_hours`). Proposals dispatched outside working hours or near shift close risk expiration before review. All proposals must be scheduled within active hours or queued.
 4. **Dimension Separation of Concerns**: Agent-facing prompt and conversational content (`welcome_message`, `voice`, `prompt_version`) govern **engagement rate**; telephony and operational dimensions (`caller_id`, `schedule.hour_weights`, `schedule.lead_preferred_hour`) govern **pickup rate**.
@@ -29,7 +29,7 @@ The controller operates an autonomous, closed-loop optimization cycle across ten
 | **C1** | Event ingestion at load-scenario scale | **Built** | Non-negotiable floor; handles ~21,000 events/sec via atomic chunk transactions in SQLite. | Fully production-ready. |
 | **C2** | Shared demographic cohort model | **Built** | Prevents variance cancellation (e.g. senior vs young voice preference) and satisfies unified view. | Dynamic clustering on unsupervised lead features. |
 | **C3** | Bootstrapping from history before D0 | **Built** | Learns returning lead preferred hours and validates initial prompt upgrades prior to tick advance. | Pre-computation of baseline variance across campaigns. |
-| **C4** | Call-time schedule optimization | **Built** | Aligns dialler weights to diurnal pickup curves and returning person responsive hours (`lead_preferred_hour`). | Online reinforcement learning of per-lead pickup probability. |
+| **C4** | Call-time schedule optimisation | **Built** | Aligns dialler weights to diurnal pickup curves and returning person responsive hours (`lead_preferred_hour`). | Online reinforcement learning of per-lead pickup probability. |
 | **C5** | Caller-ID health & rotation | **Built** | Detects spam flagging via peer DID comparison; rotates traffic using policy-permitted auto-apply. | Multi-armed contextual bandit balancing DID load decay ($\tau$). |
 | **C6** | Variant experimentation (welcome & voice) | **Built** | 85/15 Champion-vs-Challenger design with two-proportion Z-tests and Bonferroni correction. | Higher-order factorial interaction models ($W \times V$). |
 | **C7** | Winner promotion & decay rollback | **Built** | Promotes winning challengers to 85% champion; detects performance degradation ($>3.5\%$ drop) and rotates to fallback. | Bayesian change-point detection (CUSUM / Page-Hinkley). |
@@ -56,7 +56,7 @@ The controller operates an autonomous, closed-loop optimization cycle across ten
   2. *Claim*: "Northwind told me they are fine with auto-apply on KYC." $\rightarrow$ **FALSE**. `nw_kyc` governance explicitly sets `auto_apply: {enabled: false, allowed_dims: [], max_shift: 0}`.
   3. *Claim*: "Roll out persuasive prompt P4 everywhere." $\rightarrow$ **DISQUALIFYING**. P4 exhibits a 2.5% hallucination rate, violating Northwind's `min_validation_pass_rate: 0.97`, and is not even in `nw_kyc`'s allowed prompt catalog.
 - **Reply Sent**:
-> Nikhil, we want rapid lift as much as you do for the summit, but auto-apply is governed strictly by client contracts. Northwind explicitly disabled auto-apply for KYC, and Kestrel caps allocation shifts at 20% while requiring approval for scripts. Forcing P4 into Northwind would violate IRDAI compliance due to its 2.5% hallucination rate. We have already unlocked substantial gains (+9.2% overall conclusion lift, +21.6% on Kestrel) by optimizing call timing and safe variant promotion within approved guardrails. We will demonstrate verified overnight lift at the summit while proving bulletproof regulatory safety.
+> Nikhil, we want rapid lift as much as you do for the summit, but auto-apply is governed strictly by client contracts. Northwind explicitly disabled auto-apply for KYC, and Kestrel caps allocation shifts at 20% while requiring approval for scripts. Forcing P4 into Northwind would violate IRDAI compliance due to its 2.5% hallucination rate. We have already unlocked substantial gains (+9.2% overall conclusion lift, +21.6% on Kestrel) by optimising call timing and safe variant promotion within approved guardrails. We will demonstrate verified overnight lift at the summit while proving bulletproof regulatory safety.
 
 ---
 
@@ -88,7 +88,7 @@ The controller operates an autonomous, closed-loop optimization cycle across ten
 ---
 
 ### 3.5 Memo 05: Tara Kulkarni, Head of Product
-- **Accepted**: Strict separation of pickup and engagement KPIs; unified cohort model shared between detection, optimization, and auditing; honest impact scores based on 3-day replay; re-queueing expired proposals with refreshed baselines; isolating variant wins to specific workflows.
+- **Accepted**: Strict separation of pickup and engagement KPIs; unified cohort model shared between detection, optimisation, and auditing; honest impact scores based on 3-day replay; re-queueing expired proposals with refreshed baselines; isolating variant wins to specific workflows.
 - **Pushed Back**: Implementing dynamic per-person micro-cohorting across all lead dimensions simultaneously (would fragment traffic below statistical significance thresholds).
 - **Contract/Policy Errors in Memo**:
   - *Claim*: "Expired proposal = rejection." $\rightarrow$ Technically in governance, `expired` is distinct from `rejected`. An expired proposal timed out due to approver absence, whereas rejection is an active decision. Expired proposals can and should be re-submitted during active approver hours.
@@ -98,7 +98,7 @@ The controller operates an autonomous, closed-loop optimization cycle across ten
 ---
 
 ### 3.6 Memo 06: Aryamann, CTO
-- **Accepted**: Explainability over black-box lift; deterministic statistical testing (no LLM-decided winners); frugality with scenario credits (only 16 credits used across public_02); prioritizing C1, C5, C6, C7, C8, C9, C12, C13 over sprawling superficial features; trusting SIMULATOR.md contract over informal recollections.
+- **Accepted**: Explainability over black-box lift; deterministic statistical testing (no LLM-decided winners); frugality with scenario credits (only 16 credits used across public_02); prioritising C1, C5, C6, C7, C8, C9, C12, C13 over sprawling superficial features; trusting SIMULATOR.md contract over informal recollections.
 - **Pushed Back**: None. The memo represents sound engineering philosophy.
 - **Contract/Policy Errors in Memo**: None.
 - **Reply Sent**:
@@ -181,7 +181,7 @@ Rather than fragmenting leads into micro-segments with insufficient dial volume,
 - **Rollback**: The controller immediately drops the decaying variant back to 5% exploration and restores the proven historical baseline (e.g., W1 or V1) as the 85% champion.
 
 ### Call Time & Caller ID (C4, C5)
-- **Call-Time Optimization**: On D0, `schedule.hour_weights` is populated to assign weight 2 to diurnal peak hours (10:00–14:00 and 17:00–19:00) and weight 1 to off-peak hours. From historical chunks, returning leads with successful connects have their responsive hour mapped in `schedule.lead_preferred_hour` (multiplying weight by $6\times$ during their preferred window).
+- **Call-Time Optimisation**: On D0, `schedule.hour_weights` is populated to assign weight 2 to diurnal peak hours (10:00–14:00 and 17:00–19:00) and weight 1 to off-peak hours. From historical chunks, returning leads with successful connects have their responsive hour mapped in `schedule.lead_preferred_hour` (multiplying weight by $6\times$ during their preferred window).
 - **Caller-ID Rotation**: Every caller ID's pickup rate is compared against its peers over a rolling 48-hour window. If a DID's pickup rate drops $>7\%$ below peer average with $N \ge 25$ dials, it is flagged as spam-degraded. The controller redistributes traffic to healthy DIDs, leaving only a 2% probe allocation to monitor recovery.
 
 ### Guardrail KPI Enforcement
@@ -298,7 +298,7 @@ We developed and executed an automated hard-crash test (`scripts/test_crash_reco
 - **4xx Handling**:
   - `409 stale_base_version`: Automatically refreshes version, rebases proposed config, and re-submits.
   - `403 auto_apply_not_permitted`: Logs rejection reason, adjusts shift step, or routes through approval path.
-  - `402 out_of_credits`: Halts LLM/validation calls gracefully, falling back to non-prompt variant optimizations.
+  - `402 out_of_credits`: Halts LLM/validation calls gracefully, falling back to non-prompt variant optimisations.
 - **5xx / Network Blips**: Handled via exponential backoff (1s, 2s, 4s) in `SimulatorClient`.
 
 ---
@@ -319,7 +319,7 @@ ORDER BY ts ASC LIMIT 5;"
 
 **Real Output**:
 ```
-2027-01-04T10:00:00|nw_renewal|auto_applied|Optimize peak-hour calling schedule|2|applied
+2027-01-04T10:00:00|nw_renewal|auto_applied|Optisize peak-hour calling schedule|2|applied
 2027-01-04T12:00:00|ks_cancel|config_applied|Upgrade prompt from P1 to grounded prompt P3|2|applied
 2027-01-04T14:00:00|nw_kyc|config_applied|Upgrade prompt from P1 to grounded prompt P3|2|applied
 2027-01-06T10:00:00|ks_cancel|auto_applied|Rotate traffic away from degraded caller ID D2|5|applied
