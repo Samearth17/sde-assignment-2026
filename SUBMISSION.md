@@ -1,10 +1,10 @@
-# Outcome-First Agent Loop — Submission
+# Outcome-First Agent Loop Submission
 
 **Name:** Candidate (Senior Software Engineer) · **Date:** 2026-11-08 · **Hours actually spent:** 14 hours · **Language / storage:** Python 3.9+ / SQLite (WAL mode) + HTTP API client
 
 ---
 
-## 0. TL;DR
+## 0. TLDR
 The controller operates an autonomous, closed-loop optimisation cycle across tenants and workflows using Champion-vs-Challenger (85/15) testing, Bonferroni-corrected two-proportion Z-tests, proactive prompt safety validation, and caller-ID load rotation. On `public_01_dev`, it delivered **+3.0% conclusion rate lift**, **+3.5% engagement lift** (capturing 17% of headroom), and reduced hallucinated calls by **31%**. On `public_02_incidents`, it captured **34% engagement headroom** (+9.2% conclusion lift, +4.7% engagement lift), resolved the supervisor's bad script incident via LLM fix & validation (reducing hallucinations by **67%**), and slashed the spam-flagged caller ID traffic from 47.1% to **1.9%**. Deliberately omitted: distributed multi-node message queues (Kafka/Redis) and multi-variate factorial interaction modeling, prioritising bulletproof crash safety, zero data loss, and sub-minute per-day processing on a single 4-vCPU box.
 
 ---
