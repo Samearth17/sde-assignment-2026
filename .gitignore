@@ -1,8 +1,14 @@
 runs/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .venv/
+venv/
+.pytest_cache/
 *.db
 *.db-wal
 *.db-shm
 .DS_Store
+.coverage
+htmlcov/
